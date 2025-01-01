@@ -14,9 +14,9 @@ images:
     target: dev
     buildArgs:
       DEV_MODE: "true"
-      INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-false}
-      INCLUDE_FIREFOX: ${INCLUDE_FIREFOX:-false}
-      BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
+      INCLUDE_CHROMIUM: "false"
+      INCLUDE_FIREFOX: "false"
+      BUILD_TRANSLATIONS: "false"
 
 deployments:
   superset:
@@ -28,6 +28,13 @@ deployments:
         extraEnv:
           DEV_MODE: "true"
           SUPERSET_SECRET_KEY: super-secret-key-1234
+
+        configOverrides:
+          default: |
+            ENABLE_PROXY_FIX=True
+            CSRF_ENABLED = False
+            WTF_CSRF_ENABLED = False
+            TALISMAN_ENABLED = False
 
         bootstrapScript: |
           #!/bin/bash
