@@ -1,0 +1,67 @@
+version: v2beta1
+name: superset
+pipelines:
+  dev:
+    run: |-
+      build_images --all
+      create_deployments --all
+      start_dev --all
+
+images:
+  superset:
+    image: superset/superset
+    context: .
+    buildArgs:
+      DEV_MODE: "true"
+      INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-false}
+      INCLUDE_FIREFOX: ${INCLUDE_FIREFOX:-false}
+      BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
+
+deployments:
+  superset:
+    helm:
+      chart:
+        name: superset
+        path: helm/superset
+      values:
+        extraEnv:
+          DEV_MODE: "true"
+          SUPERSET_SECRET_KEY: super-secret-key-1234
+
+        image:
+          repository: ${runtime.images.superset.image}
+          tag: ${runtime.images.superset.tag}
+
+        init:
+          enabled: true
+        postgresql:
+          auth:
+            enablePostgresUser: true
+          primary:
+            persistence:
+              size: 1Gi
+            resourcesPreset: small
+        redis:
+          architecture: standalone
+          master:
+            persistence:
+              enabled: false
+
+dev:
+  superset:
+    labelSelector:
+      app.kubernetes.io/component: superset
+    sync:
+    - path: ./docker:/app/docker
+    - path: ./superset/:/app/superset
+    - path: ./superset-frontend/:/app/superset-frontend
+    - path: superset_home:/app/superset_home
+    - path: ./tests:/app/tests
+    ports:
+    - port: "8088"
+    logs: {}
+
+commands:
+  prisma-db-push: |-
+    pnpm prisma db push
+    rm prisma/interfaces.ts
