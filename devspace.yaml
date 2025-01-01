@@ -11,6 +11,7 @@ images:
   superset:
     image: superset/superset
     context: .
+    target: dev
     buildArgs:
       DEV_MODE: "true"
       INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-false}
@@ -27,6 +28,17 @@ deployments:
         extraEnv:
           DEV_MODE: "true"
           SUPERSET_SECRET_KEY: super-secret-key-1234
+
+        bootstrapScript: |
+          #!/bin/bash
+          export VIRTUAL_ENV=/app/.venv
+          export PATH="$VIRTUAL_ENV/bin:$PATH"
+          /app/.venv/bin/python -m ensurepip --default-pip
+          /app/.venv/bin/python -m pip install psycopg2-binary
+
+          if [ ! -f ~/bootstrap ]; then
+            echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap;
+          fi
 
         image:
           repository: ${runtime.images.superset.image}
@@ -50,7 +62,7 @@ deployments:
 dev:
   superset:
     labelSelector:
-      app.kubernetes.io/component: superset
+      app: superset
     sync:
     - path: ./docker:/app/docker
     - path: ./superset/:/app/superset
