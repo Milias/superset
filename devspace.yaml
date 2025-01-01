@@ -71,11 +71,7 @@ dev:
     labelSelector:
       app: superset
     sync:
-    - path: ./docker:/app/docker
     - path: ./superset/:/app/superset
-    - path: ./superset-frontend/:/app/superset-frontend
-    - path: superset_home:/app/superset_home
-    - path: ./tests:/app/tests
     ports:
     - port: "8088"
     logs: {}
