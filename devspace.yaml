@@ -74,7 +74,6 @@ dev:
     - path: ./superset/:/app/superset
     ports:
     - port: "8088"
-    logs: {}
 
 commands:
   prisma-db-push: |-
